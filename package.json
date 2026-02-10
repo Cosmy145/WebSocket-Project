@@ -1,0 +1,17 @@
+{
+  "name": "websockets-project",
+  "version": "1.0.0",
+  "description": "This is my websockets application",
+  "license": "ISC",
+  "author": "Shivansh Kavatra",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
