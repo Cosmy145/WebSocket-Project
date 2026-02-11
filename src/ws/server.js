@@ -17,29 +17,41 @@ function broadcastJson(wss, payload) {
 
 export function attachWebsocketServer(httpServer) {
   const wss = new WebSocketServer({
-    server: httpServer,
-    path: "/ws",
+    noServer: true,
     maxPayloadLength: 1024 * 1024,
   });
 
-  wss.on("connection", async (socket, request) => {
+  httpServer.on("upgrade", async (request, socket, head) => {
+    if (request.url !== "/ws") {
+      socket.destroy();
+      return;
+    }
 
-    if(wsArcjet ) {
-      try{
+    if (wsArcjet) {
+      try {
         const decision = await wsArcjet.protect(request);
-        if(decision.isDenied()) {
-          const code = decision.reason.isRateLimit() ? 1013 : 1008;
-          const reason = decision.reason.isRateLimit() ? "Too many requests" : "Access denied";
-          socket.close(code, reason);
+        if (decision.isDenied()) {
+          const message = decision.reason.isRateLimit()
+            ? "HTTP/1.1 429 Too Many Requests\r\n\r\n"
+            : "HTTP/1.1 403 Forbidden\r\n\r\n";
+          socket.write(message);
+          socket.destroy();
           return;
         }
-      }catch(error) {
+      } catch (error) {
         console.log("Arcjet Middleware error", error);
-        socket.close(1011, "Internal Server Error");
+        socket.write("HTTP/1.1 500 Internal Server Error\r\n\r\n");
+        socket.destroy();
         return;
       }
     }
 
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit("connection", ws, request);
+    });
+  });
+
+  wss.on("connection", (socket) => {
     socket.isAlive = true;
     socket.on("pong", () => {
       socket.isAlive = true;
