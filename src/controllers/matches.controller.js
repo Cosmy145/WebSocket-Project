@@ -48,6 +48,10 @@ export const createMatch = async (req, res) => {
     status: getMatchStatus(startTime, endTime),
   }).returning();
 
+  if(req.app.locals.broadcastMatchCreated){
+    req.app.locals.broadcastMatchCreated(match);
+  }
+
   return res.status(201).json({
     message: "Match created successfully",
     match,
