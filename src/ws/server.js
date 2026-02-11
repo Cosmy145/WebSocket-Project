@@ -1,7 +1,8 @@
 import { WebSocketServer, WebSocket } from "ws";
+import matchEmitter from "../events/matchEvents.js";
 
 function sendJson(socket, payload) {
-  if (!socket.readyState === WebSocket.OPEN) {
+  if (socket.readyState !== WebSocket.OPEN) {
     return;
   }
   socket.send(JSON.stringify(payload));
@@ -52,12 +53,11 @@ export function attachWebsocketServer(httpServer) {
     clearInterval(interval);
   });
 
-  function broadcastMatchCreated(match){
+  // Listen for match events and broadcast to all WebSocket clients
+  matchEmitter.on("match:created", (match) => {
     broadcastJson(wss, {
       type: "match_created",
       match,
     });
-  }
-
-  return {broadcastMatchCreated};
+  });
 }

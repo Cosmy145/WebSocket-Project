@@ -19,12 +19,14 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/matches", matchesRoutes);
 
-const {broadcastMatchCreated} = attachWebsocketServer(server);
-app.locals.broadcastMatchCreated = broadcastMatchCreated;
+attachWebsocketServer(server);
 
 // Start server
 server.listen(PORT, HOST, () => {
-  const baseUrl = HOST === '0.0.0.0' ? `http://localhost:${PORT}` : `http://${HOST}:${PORT}`;
-  console.log(`Server is running at ${baseUrl}`); 
-  console.log(`WebSocket server is running at ${baseUrl.replace('http', 'ws')}/ws`);
+  const baseUrl =
+    HOST === "0.0.0.0" ? `http://localhost:${PORT}` : `http://${HOST}:${PORT}`;
+  console.log(`Server is running at ${baseUrl}`);
+  console.log(
+    `WebSocket server is running at ${baseUrl.replace("http", "ws")}/ws`,
+  );
 });
