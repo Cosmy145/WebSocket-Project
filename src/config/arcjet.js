@@ -4,7 +4,7 @@ const arcjetKey = process.env.ARCJET_KEY;
 const arcjetMode = process.env.ARCJET_MODE === "DRY_RUN" ? "DRY_RUN" : "LIVE";
 
 if (!arcjetKey) {
-  throw new Error("ARCJET_KEY is not defined");
+  console.warn("ARCJET_KEY is not defined - Arcjet protection disabled");
 }
 
 export const httpArcjet = arcjetKey
@@ -44,7 +44,7 @@ export const wsArcjet = arcjetKey
           allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW"],
         }),
         slidingWindow({
-          // this protects us from rate limiting attacks, it allows only 50 requests in 10 seconds from a single ip address
+          // this protects us from rate limiting attacks, it allows only 5 requests in 2 seconds from a single ip address
           mode: arcjetMode,
           interval: "2s",
           max: 5,

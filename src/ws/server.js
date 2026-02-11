@@ -22,11 +22,11 @@ export function attachWebsocketServer(httpServer) {
     maxPayloadLength: 1024 * 1024,
   });
 
-  wss.on("connection", async (socket) => {
+  wss.on("connection", async (socket, request) => {
 
     if(wsArcjet ) {
       try{
-        const decision = await wsArcjet.protect(socket);
+        const decision = await wsArcjet.protect(request);
         if(decision.isDenied()) {
           const code = decision.reason.isRateLimit() ? 1013 : 1008;
           const reason = decision.reason.isRateLimit() ? "Too many requests" : "Access denied";
