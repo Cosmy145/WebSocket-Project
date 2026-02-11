@@ -1,5 +1,6 @@
 import { WebSocketServer, WebSocket } from "ws";
 import matchEmitter from "../events/matchEvents.js";
+import { wsArcjet } from "../config/arcjet.js";
 
 function sendJson(socket, payload) {
   if (socket.readyState !== WebSocket.OPEN) {
@@ -21,7 +22,24 @@ export function attachWebsocketServer(httpServer) {
     maxPayloadLength: 1024 * 1024,
   });
 
-  wss.on("connection", (socket) => {
+  wss.on("connection", async (socket, request) => {
+
+    if(wsArcjet ) {
+      try{
+        const decision = await wsArcjet.protect(request);
+        if(decision.isDenied()) {
+          const code = decision.reason.isRateLimit() ? 1013 : 1008;
+          const reason = decision.reason.isRateLimit() ? "Too many requests" : "Access denied";
+          socket.close(code, reason);
+          return;
+        }
+      }catch(error) {
+        console.log("Arcjet Middleware error", error);
+        socket.close(1011, "Internal Server Error");
+        return;
+      }
+    }
+
     socket.isAlive = true;
     socket.on("pong", () => {
       socket.isAlive = true;
